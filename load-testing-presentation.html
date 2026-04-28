@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>성능 테스트 — Performance Testing</title>
+
+<!-- ===========================================
+     FONTS — Archivo (display) + Nunito (body)
+     Swiss Modern preset font pairing
+     =========================================== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Nunito:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================
+   CSS CUSTOM PROPERTIES (THEME)
+   Swiss Modern — Pure white, pure black, red accent
+   Modify --accent to change the entire theme accent color
+   =========================================== */
+:root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --ink-soft: #444444;
+    --ink-mute: #888888;
+    --accent: #ff3300;
+    --accent-soft: #fff0ec;
+    --grid: rgba(10, 10, 10, 0.05);
+    --line: rgba(10, 10, 10, 0.12);
+    --code-bg: #0a0a0a;
+    --code-text: #e8e8e8;
+    --code-accent: #ff8866;
+
+    /* Typography (clamp for responsive scaling) */
+    --font-display: 'Archivo', sans-serif;
+    --font-body: 'Nunito', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --title-size: clamp(2rem, 6vw, 5rem);
+    --h2-size: clamp(1.5rem, 4vw, 3.2rem);
+    --h3-size: clamp(1.1rem, 2.2vw, 1.7rem);
+    --body-size: clamp(0.85rem, 1.4vw, 1.1rem);
+    --small-size: clamp(0.7rem, 1vw, 0.9rem);
+    --label-size: clamp(0.65rem, 0.95vw, 0.85rem);
+
+    /* Spacing */
+    --slide-padding: clamp(1.5rem, 4vw, 4rem);
+    --content-gap: clamp(0.75rem, 2vw, 2rem);
+    --element-gap: clamp(0.4rem, 1vw, 1rem);
+
+    /* Animation */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --duration: 0.55s;
+}
+
+/* ===========================================
+   VIEWPORT BASE — DO NOT MODIFY
+   Lifted from viewport-base.css — ensures every
+   slide fits exactly within the viewport
+   =========================================== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+html {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--ink);
+    font-weight: 400;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+}
+
+.slide {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    scroll-snap-align: start;
+    position: relative;
+    padding: var(--slide-padding);
+    display: flex;
+    flex-direction: column;
+    background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: clamp(40px, 5vw, 70px) clamp(40px, 5vw, 70px);
+}
+
+/* Responsive breakpoints — aggressive scaling */
+@media (max-height: 700px) {
+    :root {
+        --slide-padding: clamp(0.75rem, 3vw, 2rem);
+        --content-gap: clamp(0.5rem, 1.5vw, 1rem);
+        --title-size: clamp(1.4rem, 5vw, 3.2rem);
+        --h2-size: clamp(1.2rem, 3.2vw, 2.2rem);
+    }
+}
+@media (max-height: 600px) {
+    :root {
+        --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+        --title-size: clamp(1.2rem, 4.5vw, 2.4rem);
+        --h2-size: clamp(1rem, 2.8vw, 1.7rem);
+        --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+    }
+    .nav-dots, .keyboard-hint, .decorative { display: none; }
+}
+@media (max-width: 600px) {
+    :root { --title-size: clamp(1.4rem, 8vw, 2.5rem); }
+    .grid-3 { grid-template-columns: 1fr !important; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+    html { scroll-behavior: auto; }
+}
+
+/* ===========================================
+   SHARED LAYOUT ELEMENTS
+   =========================================== */
+
+/* Slide top bar — section number + label */
+.top-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-display); font-weight: 700;
+    font-size: var(--label-size);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-mute);
+}
+.top-bar .num {
+    color: var(--accent); font-weight: 800;
+    font-size: clamp(0.75rem, 1.1vw, 1rem);
+}
+.top-bar .num::before {
+    content: ''; display: inline-block;
+    width: clamp(20px, 2.5vw, 32px); height: 2px;
+    background: var(--accent); margin-right: 0.6rem; vertical-align: middle;
+}
+
+/* Bottom footer */
+.foot-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 2px solid var(--ink);
+    padding-top: clamp(0.5rem, 1.5vh, 1rem);
+    font-family: var(--font-display); font-weight: 700;
+    font-size: var(--label-size);
+    letter-spacing: 0.15em; text-transform: uppercase;
+}
+
+/* Hero slide content area */
+.hero-area {
+    flex: 1;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative;
+    gap: var(--element-gap);
+    min-height: 0;
+}
+
+/* Eyebrow label */
+.eyebrow {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: var(--label-size); letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--accent);
+}
+
+/* Display headings */
+h1.display, h2.display {
+    font-family: var(--font-display); font-weight: 900;
+    line-height: 0.92; letter-spacing: -0.04em;
+    color: var(--ink);
+}
+h1.display { font-size: var(--title-size); }
+h2.display { font-size: var(--h2-size); }
+h2.display .accent { color: var(--accent); }
+
+/* Body paragraph */
+.lede {
+    font-size: clamp(1rem, 1.7vw, 1.4rem);
+    font-weight: 500; line-height: 1.45;
+    max-width: 60ch; color: var(--ink-soft);
+}
+
+/* ===========================================
+   ANIMATIONS — staggered reveal on slide enter
+   Calm + Confident: 0.55s, exponential ease
+   =========================================== */
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity var(--duration) var(--ease-out-expo),
+                transform var(--duration) var(--ease-out-expo);
+}
+.slide.visible .reveal { opacity: 1; transform: translateY(0); }
+.slide.visible .reveal:nth-child(1) { transition-delay: 0.05s; }
+.slide.visible .reveal:nth-child(2) { transition-delay: 0.18s; }
+.slide.visible .reveal:nth-child(3) { transition-delay: 0.31s; }
+.slide.visible .reveal:nth-child(4) { transition-delay: 0.44s; }
+.slide.visible .reveal:nth-child(5) { transition-delay: 0.57s; }
+.slide.visible .reveal:nth-child(6) { transition-delay: 0.7s; }
+
+/* Geometric shapes that scale in */
+.reveal-scale {
+    opacity: 0; transform: scale(0.5);
+    transition: opacity 0.7s var(--ease-out-expo),
+                transform 0.7s var(--ease-out-expo);
+}
+.slide.visible .reveal-scale { opacity: 1; transform: scale(1); }
+
+/* ===========================================
+   GEOMETRIC SHAPES (Swiss Modern signature)
+   =========================================== */
+.geo-circle {
+    position: absolute; border: 2px solid var(--ink);
+    border-radius: 50%;
+}
+.geo-circle.filled { background: var(--accent); border-color: var(--accent); }
+.geo-square { position: absolute; background: var(--accent); }
+.geo-line { position: absolute; background: var(--ink); }
+
+/* ===========================================
+   1. TITLE SLIDE
+   =========================================== */
+.title-slide .hero-title {
+    font-size: clamp(2.5rem, 9vw, 7rem);
+    line-height: 0.88;
+    letter-spacing: -0.045em;
+}
+.title-slide .hero-title .accent { color: var(--accent); }
+.title-slide .geo-circle.t1 {
+    top: 10%; right: 8%;
+    width: clamp(80px, 12vw, 180px); height: clamp(80px, 12vw, 180px);
+}
+.title-slide .geo-square.t1 {
+    top: 20%; right: 12%;
+    width: clamp(40px, 6vw, 90px); height: clamp(40px, 6vw, 90px);
+}
+
+/* ===========================================
+   2. DEFINITION (정의 슬라이드)
+   =========================================== */
+.def-quote {
+    border-left: 4px solid var(--accent);
+    padding: clamp(0.8rem, 1.5vw, 1.5rem) 0 clamp(0.8rem, 1.5vw, 1.5rem) clamp(1rem, 2vw, 2rem);
+    margin: clamp(0.8rem, 2vh, 1.5rem) 0;
+    font-family: var(--font-display); font-weight: 500;
+    font-size: clamp(1.1rem, 2vw, 1.6rem);
+    line-height: 1.4; max-width: 55ch;
+}
+.def-quote strong { color: var(--accent); font-weight: 800; }
+.def-key {
+    margin-top: clamp(0.8rem, 2vh, 1.6rem);
+    font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+    font-weight: 600; max-width: 55ch;
+}
+.def-key .arrow { color: var(--accent); font-weight: 800; margin-right: 0.4em; }
+
+/* ===========================================
+   3. DOMINO (도미노 다이어그램)
+   =========================================== */
+.domino-chain {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: clamp(0.4rem, 1vw, 0.8rem);
+    margin-top: clamp(1rem, 2vh, 2rem);
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(0.85rem, 1.4vw, 1.15rem);
+}
+.domino-step {
+    padding: clamp(0.4rem, 1vw, 0.7rem) clamp(0.7rem, 1.4vw, 1.2rem);
+    background: var(--bg); border: 2px solid var(--ink);
+    letter-spacing: 0.02em;
+}
+.domino-step.crit { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.domino-arrow { color: var(--accent); font-weight: 900; font-size: clamp(1rem, 1.6vw, 1.3rem); }
+
+.cause-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: clamp(0.4rem, 1vw, 0.8rem);
+    margin: clamp(0.6rem, 1.5vh, 1rem) 0;
+    max-width: 90%;
+}
+.cause-list li {
+    padding: clamp(0.5rem, 1.2vw, 0.85rem);
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    font-size: var(--body-size); font-weight: 600;
+}
+
+/* ===========================================
+   4. CASE CARDS (3개 사례)
+   =========================================== */
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(0.8rem, 1.5vw, 1.5rem);
+    margin-top: clamp(0.8rem, 2vh, 1.5rem);
+    flex: 1;
+    min-height: 0;
+}
+.case-card {
+    background: var(--bg);
+    border: 2px solid var(--ink);
+    padding: clamp(0.8rem, 1.5vw, 1.5rem);
+    display: flex; flex-direction: column;
+    gap: clamp(0.4rem, 1vw, 0.8rem);
+    overflow: hidden;
+    position: relative;
+}
+.case-card .case-num {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    color: var(--accent); line-height: 1;
+}
+.case-card h3 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(0.95rem, 1.5vw, 1.25rem);
+    line-height: 1.2; letter-spacing: -0.01em;
+}
+.case-card p {
+    font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+    color: var(--ink-soft); line-height: 1.5;
+    flex: 1; overflow: hidden;
+}
+.case-card .case-tag {
+    margin-top: auto;
+    font-family: var(--font-display); font-weight: 700;
+    font-size: var(--label-size);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent);
+    border-top: 1px solid var(--line);
+    padding-top: clamp(0.4rem, 0.8vw, 0.6rem);
+}
+
+/* ===========================================
+   5. COST vs STABILITY (양면 비교)
+   =========================================== */
+.split-2 {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: clamp(1rem, 2vw, 2.5rem);
+    margin-top: clamp(0.8rem, 2vh, 1.5rem);
+    flex: 1; min-height: 0; align-items: stretch;
+}
+.opt-bad, .opt-good {
+    padding: clamp(0.8rem, 2vw, 2rem);
+    display: flex; flex-direction: column;
+    gap: clamp(0.5rem, 1vw, 1rem);
+}
+.opt-bad {
+    background: #f5f5f5; border-left: 4px solid var(--ink-mute);
+}
+.opt-good {
+    background: var(--accent-soft); border-left: 4px solid var(--accent);
+}
+.opt-symbol {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(1.8rem, 3.5vw, 3rem);
+    line-height: 1; color: var(--ink-mute);
+}
+.opt-good .opt-symbol { color: var(--accent); }
+.opt-bad h3, .opt-good h3 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(1rem, 1.8vw, 1.4rem);
+    line-height: 1.25;
+}
+.opt-bad p, .opt-good p {
+    font-size: var(--body-size); color: var(--ink-soft);
+}
+
+/* ===========================================
+   TABLES
+   =========================================== */
+.tbl-wrap {
+    flex: 1; min-height: 0;
+    display: flex; flex-direction: column; justify-content: center;
+}
+.data-tbl {
+    width: 100%; border-collapse: collapse;
+    font-size: clamp(0.75rem, 1.2vw, 1rem);
+    margin-top: clamp(0.6rem, 1.5vh, 1rem);
+}
+.data-tbl thead th {
+    text-align: left;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: var(--label-size);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    border-bottom: 2px solid var(--ink);
+    padding: clamp(0.5rem, 1vw, 0.85rem) clamp(0.5rem, 1vw, 1rem);
+    color: var(--ink);
+}
+.data-tbl tbody td {
+    border-bottom: 1px solid var(--line);
+    padding: clamp(0.5rem, 1vw, 0.85rem) clamp(0.5rem, 1vw, 1rem);
+    vertical-align: top;
+    line-height: 1.4;
+}
+.data-tbl tbody tr:hover { background: var(--accent-soft); }
+.data-tbl .label {
+    font-family: var(--font-display); font-weight: 800;
+    color: var(--ink);
+    white-space: nowrap;
+}
+.data-tbl .label .accent-dot::before {
+    content: '●'; color: var(--accent);
+    margin-right: 0.4em; font-size: 0.7em; vertical-align: middle;
+}
+.data-tbl .highlight { color: var(--accent); font-weight: 700; }
+
+/* ===========================================
+   7. CODE BLOCK (VU 슬라이드)
+   =========================================== */
+.code-pane {
+    background: var(--code-bg); color: var(--code-text);
+    font-family: var(--font-mono); font-weight: 400;
+    padding: clamp(1rem, 2vw, 1.8rem);
+    font-size: clamp(0.75rem, 1.3vw, 1rem);
+    line-height: 1.65; letter-spacing: -0.01em;
+    margin: clamp(0.8rem, 2vh, 1.5rem) 0;
+    overflow: hidden;
+    position: relative;
+    border-left: 4px solid var(--accent);
+}
+.code-pane::before {
+    content: 'k6.options.js';
+    position: absolute; top: 0; right: 0;
+    background: var(--accent); color: var(--bg);
+    font-family: var(--font-display); font-weight: 700;
+    font-size: var(--label-size);
+    padding: 0.3rem 0.7rem;
+    letter-spacing: 0.1em;
+}
+.code-pane .kw { color: #ff8866; font-weight: 600; }
+.code-pane .str { color: #88dd99; }
+.code-pane .num { color: #ffcc66; }
+.code-pane .comment { color: #888888; font-style: italic; }
+.code-pane .prop { color: #99ccff; }
+
+.term-defs {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: clamp(0.6rem, 1.2vw, 1.2rem);
+    margin-top: auto;
+}
+.term-defs .term {
+    padding: clamp(0.5rem, 1vw, 0.85rem);
+    border-top: 2px solid var(--ink);
+}
+.term-defs .term-name {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(0.8rem, 1.3vw, 1.05rem);
+    color: var(--accent); text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.term-defs .term-desc {
+    font-size: var(--small-size); color: var(--ink-soft);
+    margin-top: 0.3em;
+}
+
+/* ===========================================
+   8. METRIC OVERVIEW (3 KPI)
+   =========================================== */
+.kpi-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: clamp(0.8rem, 1.5vw, 1.5rem);
+    flex: 1; min-height: 0;
+    margin-top: clamp(0.8rem, 2vh, 1.5rem);
+}
+.kpi-card {
+    border: 2px solid var(--ink);
+    padding: clamp(0.8rem, 1.8vw, 1.6rem);
+    display: flex; flex-direction: column;
+    gap: clamp(0.4rem, 1vw, 0.8rem);
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+}
+.kpi-card .kpi-num {
+    position: absolute;
+    top: clamp(0.3rem, 1vw, 0.6rem); right: clamp(0.6rem, 1.5vw, 1.2rem);
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(2rem, 5vw, 4.5rem);
+    color: var(--accent-soft); line-height: 1;
+    z-index: 0;
+}
+.kpi-card .kpi-content { position: relative; z-index: 1; }
+.kpi-card .kpi-name {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(1rem, 1.8vw, 1.5rem);
+    color: var(--ink); line-height: 1.1;
+}
+.kpi-card .kpi-name .label {
+    display: block;
+    font-size: clamp(0.65rem, 1vw, 0.8rem);
+    color: var(--accent); font-weight: 700;
+    letter-spacing: 0.18em; margin-bottom: 0.4em;
+}
+.kpi-card .kpi-desc {
+    font-size: clamp(0.75rem, 1.15vw, 0.95rem);
+    color: var(--ink-soft); line-height: 1.5;
+    margin-top: clamp(0.3rem, 0.8vw, 0.6rem);
+}
+
+/* ===========================================
+   9-12. METRIC DETAIL SLIDES
+   =========================================== */
+.metric-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: clamp(1rem, 2vw, 2.5rem);
+    flex: 1; min-height: 0; align-items: center;
+}
+.metric-formula {
+    background: var(--code-bg); color: var(--code-text);
+    font-family: var(--font-mono); font-weight: 400;
+    padding: clamp(0.8rem, 2vw, 1.5rem);
+    font-size: clamp(0.8rem, 1.4vw, 1.05rem);
+    line-height: 1.7;
+    border-left: 4px solid var(--accent);
+}
+.metric-formula .hi { color: var(--code-accent); font-weight: 600; }
+.metric-formula .res { color: #ffcc66; font-weight: 700; }
+
+.bullet-list { list-style: none; display: flex; flex-direction: column; gap: clamp(0.4rem, 1vw, 0.8rem); }
+.bullet-list li {
+    position: relative;
+    padding-left: 1.4em;
+    font-size: var(--body-size);
+    line-height: 1.55;
+}
+.bullet-list li::before {
+    content: ''; position: absolute;
+    left: 0; top: 0.55em;
+    width: 0.7em; height: 2px;
+    background: var(--accent);
+}
+.bullet-list li strong { color: var(--ink); font-weight: 700; }
+
+.trap-box {
+    background: #f5f5f5;
+    padding: clamp(0.8rem, 1.8vw, 1.4rem);
+    font-family: var(--font-mono);
+    font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+    line-height: 1.7;
+    border-left: 4px solid var(--ink);
+}
+.trap-box .t-line { display: block; }
+.trap-box .t-out { color: var(--accent); font-weight: 700; margin-top: 0.5em; display: block; }
+
+/* ===========================================
+   13. IDEAL FLOW (4단계)
+   =========================================== */
+.flow-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: clamp(0.5rem, 1.2vw, 1rem);
+    flex: 1; min-height: 0;
+    margin-top: clamp(0.8rem, 2vh, 1.5rem);
+}
+.flow-step {
+    border: 2px solid var(--ink);
+    padding: clamp(0.7rem, 1.5vw, 1.2rem);
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+.flow-step:nth-child(odd) { background: var(--bg); }
+.flow-step:nth-child(even) { background: var(--accent-soft); }
+.flow-step .step-n {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(1.2rem, 2.5vw, 2rem);
+    color: var(--accent); line-height: 1;
+}
+.flow-step h3 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(0.85rem, 1.4vw, 1.15rem);
+    line-height: 1.2; margin-top: 0.3em;
+}
+.flow-step p {
+    font-size: clamp(0.7rem, 1.05vw, 0.9rem);
+    color: var(--ink-soft); line-height: 1.45;
+    margin-top: clamp(0.4rem, 1vw, 0.8rem);
+}
+
+/* ===========================================
+   14. ENVIRONMENT DIAGRAM
+   =========================================== */
+.env-diagram {
+    display: flex; align-items: center; justify-content: center;
+    gap: clamp(0.8rem, 2vw, 2.5rem);
+    flex-wrap: wrap;
+    flex: 1; min-height: 0;
+    margin-top: clamp(0.8rem, 2vh, 1.5rem);
+}
+.env-node {
+    flex: 1; max-width: 320px; min-width: 200px;
+    border: 3px solid var(--ink);
+    padding: clamp(0.8rem, 2vw, 1.5rem);
+    text-align: center;
+    background: var(--bg);
+    position: relative;
+}
+.env-node.target { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.env-node .env-label {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: var(--label-size);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: clamp(0.4rem, 1vw, 0.8rem);
+}
+.env-node.target .env-label { color: var(--bg); opacity: 0.85; }
+.env-node h3 {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(1rem, 1.8vw, 1.4rem);
+    line-height: 1.1;
+}
+.env-node p {
+    font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+    margin-top: clamp(0.3rem, 0.8vw, 0.6rem);
+    color: var(--ink-soft);
+}
+.env-node.target p { color: rgba(255,255,255,0.85); }
+
+.env-arrow {
+    font-family: var(--font-display); font-weight: 900;
+    color: var(--accent);
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    letter-spacing: -0.05em;
+}
+
+/* ===========================================
+   16. TOOL CARDS (k6/JMeter/nGrinder)
+   =========================================== */
+.tool-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: clamp(0.7rem, 1.4vw, 1.4rem);
+    flex: 1; min-height: 0;
+    margin-top: clamp(0.8rem, 2vh, 1.5rem);
+}
+.tool-card {
+    border: 2px solid var(--ink);
+    padding: clamp(0.8rem, 1.8vw, 1.5rem);
+    display: flex; flex-direction: column;
+    gap: clamp(0.4rem, 1vw, 0.7rem);
+    background: var(--bg);
+    overflow: hidden;
+}
+.tool-card.hero { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.tool-card .tool-name {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(1.4rem, 2.6vw, 2.1rem);
+    line-height: 1; letter-spacing: -0.02em;
+}
+.tool-card .tool-tagline {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: var(--label-size);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent);
+}
+.tool-card.hero .tool-tagline { color: var(--bg); opacity: 0.85; }
+.tool-card .tool-desc {
+    font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+    color: var(--ink-soft); line-height: 1.5;
+    flex: 1;
+}
+.tool-card.hero .tool-desc { color: rgba(255,255,255,0.92); }
+.tool-card .tool-when {
+    border-top: 1px solid var(--line);
+    padding-top: clamp(0.4rem, 0.8vw, 0.6rem);
+    font-size: var(--small-size);
+    font-weight: 600;
+}
+.tool-card.hero .tool-when { border-top-color: rgba(255,255,255,0.3); }
+
+/* ===========================================
+   17. CLOSING SLIDE
+   =========================================== */
+.closing-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: clamp(0.6rem, 1.5vw, 1.5rem);
+    margin-top: clamp(0.8rem, 2vh, 1.5rem);
+}
+.closing-metric {
+    text-align: center;
+    padding: clamp(0.8rem, 2vw, 1.5rem) clamp(0.5rem, 1vw, 1rem);
+    border-top: 4px solid var(--accent);
+}
+.closing-metric .cm-name {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(1.4rem, 2.8vw, 2.3rem);
+    color: var(--accent); line-height: 1;
+}
+.closing-metric .cm-meaning {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(0.85rem, 1.3vw, 1.1rem);
+    margin-top: 0.5em;
+}
+.closing-metric .cm-desc {
+    font-size: var(--small-size); color: var(--ink-soft);
+    margin-top: 0.4em;
+}
+
+.closing-quote {
+    font-family: var(--font-display); font-weight: 500;
+    font-size: clamp(1.4rem, 3vw, 2.4rem);
+    line-height: 1.3; letter-spacing: -0.025em;
+    max-width: 22ch;
+    margin: clamp(0.8rem, 2vh, 1.5rem) 0;
+}
+.closing-quote .strike {
+    text-decoration: line-through;
+    text-decoration-color: var(--ink-mute);
+    text-decoration-thickness: 3px;
+    color: var(--ink-mute);
+    font-weight: 400;
+}
+.closing-quote .yes {
+    color: var(--accent); font-weight: 800;
+}
+
+/* ===========================================
+   PROGRESS BAR + NAV DOTS
+   =========================================== */
+.progress-bar {
+    position: fixed; top: 0; left: 0;
+    width: 0%; height: 3px;
+    background: var(--accent);
+    z-index: 100;
+    transition: width 0.2s linear;
+}
+.nav-dots {
+    position: fixed; right: clamp(0.8rem, 2vw, 1.5rem); top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: clamp(0.4rem, 0.8vw, 0.7rem);
+    z-index: 50;
+}
+.nav-dots button {
+    width: 8px; height: 8px;
+    border: 1.5px solid var(--ink);
+    background: transparent;
+    border-radius: 50%; cursor: pointer;
+    padding: 0;
+    transition: background 0.25s, transform 0.25s;
+}
+.nav-dots button:hover { transform: scale(1.4); }
+.nav-dots button.active { background: var(--accent); border-color: var(--accent); }
+
+.keyboard-hint {
+    position: fixed; bottom: clamp(0.5rem, 1.5vw, 1rem);
+    right: clamp(0.8rem, 2vw, 1.5rem);
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(0.6rem, 0.85vw, 0.75rem);
+    color: var(--ink-mute);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    z-index: 50;
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .grid-3, .kpi-grid, .tool-grid, .term-defs, .closing-grid, .flow-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+    .split-2, .metric-row { grid-template-columns: 1fr !important; }
+    .nav-dots, .keyboard-hint { display: none; }
+}
+@media (max-width: 480px) {
+    .grid-3, .kpi-grid, .tool-grid, .term-defs, .closing-grid, .flow-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+</head>
+<body>
+
+<!-- Progress bar shows scroll position across deck -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Navigation dots — populated by JS -->
+<nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+
+<!-- Keyboard hint -->
+<div class="keyboard-hint">← → · SPACE</div>
+
+<!-- ===========================================
+     1. TITLE SLIDE
+     =========================================== -->
+<section class="slide title-slide">
+    <div class="top-bar reveal">
+        <span>Backend Performance Study · 2026</span>
+        <span>k6 / JMeter / nGrinder</span>
+    </div>
+
+    <div class="hero-area">
+        <!-- Geometric accents -->
+        <div class="geo-circle reveal-scale t1"></div>
+        <div class="geo-square reveal-scale t1"></div>
+
+        <p class="eyebrow reveal">Performance Study</p>
+        <h1 class="display hero-title reveal">
+            성능 테스트<br>
+            <span class="accent">Performance Testing.</span>
+        </h1>
+        <p class="lede reveal">
+            서비스가 안정적으로 처리할 수 있는<br>
+            적정한 범위를 찾아가는 과정.
+        </p>
+    </div>
+
+    <div class="foot-bar reveal">
+        <span><span style="color:var(--accent);">01</span> &nbsp;&nbsp;Introduction</span>
+        <span>17 Slides</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     2. DEFINITION (정의)
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">01</span>
+        <span>What is Load Testing?</span>
+    </div>
+
+    <div class="hero-area">
+        <p class="eyebrow reveal">Section 01</p>
+        <h2 class="display reveal">부하 테스트란?</h2>
+
+        <div class="def-quote reveal">
+            시스템이 <strong>예상되는 트래픽을 안정적으로 처리</strong>할 수 있는지<br>
+            검증하는 테스트
+        </div>
+
+        <p class="def-key reveal">
+            <span class="arrow">→</span>
+            "최대 몇 명까지 가능한가"가 아니라,
+            <strong>실제 환경에서 문제없이 동작하는 범위를 확인하는 것.</strong>
+        </p>
+    </div>
+
+    <div class="foot-bar reveal">
+        <span>Section 01 — Definition</span>
+        <span>02 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     3. WHY — DOMINO CHAIN
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">02</span>
+        <span>Why Load Testing Matters</span>
+    </div>
+
+    <div class="hero-area">
+        <p class="eyebrow reveal">Section 02 · 왜 필요한가</p>
+        <h2 class="display reveal">트래픽 변동은<br><span class="accent">연쇄적으로 이어진다.</span></h2>
+
+        <ul class="cause-list reveal">
+            <li>이벤트 오픈</li>
+            <li>특정 시간대 트래픽 집중</li>
+            <li>마케팅 캠페인</li>
+            <li>티켓팅 오픈</li>
+            <li>대학 수강신청</li>
+        </ul>
+
+        <div class="domino-chain reveal">
+            <div class="domino-step">트래픽 증가</div>
+            <span class="domino-arrow">→</span>
+            <div class="domino-step">처리 지연</div>
+            <span class="domino-arrow">→</span>
+            <div class="domino-step">서비스 중단</div>
+            <span class="domino-arrow">→</span>
+            <div class="domino-step">사용자 이탈</div>
+            <span class="domino-arrow">→</span>
+            <div class="domino-step crit">신뢰도 하락</div>
+        </div>
+    </div>
+
+    <div class="foot-bar reveal">
+        <span>Section 02 — Why It Matters</span>
+        <span>03 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     4. REAL CASES (3 cards)
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">02</span>
+        <span>Real-World Cases</span>
+    </div>
+
+    <p class="eyebrow reveal">우리 주변의 실제 사례</p>
+    <h2 class="display reveal" style="margin-bottom: clamp(0.5rem, 1.5vh, 1rem);">사전에 측정하지 않으면<br>실제 운영에서야 한계가 보인다.</h2>
+
+    <div class="grid-3 reveal">
+        <article class="case-card">
+            <div class="case-num">01</div>
+            <h3>대학 수강신청</h3>
+            <p>명지대는 L4 스위치 과부하로 일정이 연기됐고, 이화여대는 자정까지 변경 기간을 연장했지만 재차 중단. 건국대는 한 학기 4번 중 정상 진행이 1번에 그쳤다.</p>
+            <div class="case-tag">매 학기 반복</div>
+        </article>
+
+        <article class="case-card">
+            <div class="case-num">02</div>
+            <h3>콘서트·뮤지컬 티켓팅</h3>
+            <p>인터파크는 대기열로 트래픽을 분산 처리. 예스24는 대기열 없이 일괄 입장하는 구조로 로그인 해제, 예매 버튼 누락 등 정합성 이슈가 발생했다.</p>
+            <div class="case-tag">동시 접속 집중</div>
+        </article>
+
+        <article class="case-card">
+            <div class="case-num">03</div>
+            <h3>예스24 서비스 중단</h3>
+            <p>2025년 6월, 도서·티켓·eBook 등 온라인 서비스가 10일간 중단됐다. 부하가 아닌 랜섬웨어 사례지만, 시스템 정지가 만드는 연쇄 영향을 잘 보여준다.</p>
+            <div class="case-tag">2025.06 · 10일</div>
+        </article>
+    </div>
+
+    <div class="foot-bar reveal" style="margin-top: clamp(0.8rem, 2vh, 1.5rem);">
+        <span>Section 02 — Real Cases</span>
+        <span>04 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     5. COST vs STABILITY
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">02</span>
+        <span>Cost vs Stability</span>
+    </div>
+
+    <p class="eyebrow reveal">왜 그냥 큰 서버를 쓰지 않을까?</p>
+    <h2 class="display reveal">비용과 안정성의<br><span class="accent">최적 균형점.</span></h2>
+
+    <div class="split-2 reveal">
+        <div class="opt-bad">
+            <div class="opt-symbol">✕</div>
+            <h3>무조건 큰 서버</h3>
+            <p>인프라 비용은 트래픽 대비 계속 증가하고, 피크 시간을 기준 잡으면 대부분 시간이 낭비된다. 오토스케일링 기준점도 결국 측정값이 있어야 정할 수 있다.</p>
+        </div>
+        <div class="opt-good">
+            <div class="opt-symbol">✓</div>
+            <h3>최소 비용으로 안정 확보</h3>
+            <p>성능 테스트는 <strong>"안정성을 확보하는 최소 비용 구조"</strong>를 찾기 위한 과정이다. 한계를 알아야 비용을 줄이면서도 안정적으로 운영할 수 있다.</p>
+        </div>
+    </div>
+
+    <div class="foot-bar reveal">
+        <span>Section 02 — Cost Trade-off</span>
+        <span>05 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     6. 4 TEST TYPES (TABLE)
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">03</span>
+        <span>Test Type Comparison</span>
+    </div>
+
+    <p class="eyebrow reveal">Section 03 · 테스트 유형</p>
+    <h2 class="display reveal">목적에 따라 4가지로 나뉜다.</h2>
+
+    <div class="tbl-wrap reveal">
+        <table class="data-tbl">
+            <thead>
+                <tr>
+                    <th>종류</th>
+                    <th>목적</th>
+                    <th>활용 시점</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="label"><span class="accent-dot"></span>Load Test</td>
+                    <td>예상 트래픽에서 안정적으로 동작하는지 확인</td>
+                    <td class="highlight">이번 스터디의 주제</td>
+                </tr>
+                <tr>
+                    <td class="label"><span class="accent-dot"></span>Stress Test</td>
+                    <td>한계치 초과 시 시스템이 어떻게 무너지는지</td>
+                    <td>내구 한계 파악</td>
+                </tr>
+                <tr>
+                    <td class="label"><span class="accent-dot"></span>Spike Test</td>
+                    <td>갑작스러운 트래픽 급증에도 안정적으로 응답하는지</td>
+                    <td>순간 급증 대응 확인</td>
+                </tr>
+                <tr>
+                    <td class="label"><span class="accent-dot"></span>Soak Test</td>
+                    <td>장시간 운영 시 메모리 누수·성능 저하 발견</td>
+                    <td>장기 안정성 검증</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="reveal" style="font-size: var(--small-size); color: var(--ink-mute); margin-top: clamp(0.5rem, 1.2vh, 1rem);">
+        k6는 이 모든 유형을 <code style="font-family:var(--font-mono);background:#f0f0f0;padding:1px 6px;">options</code> 시나리오 코드로 표현할 수 있다.
+    </p>
+
+    <div class="foot-bar reveal">
+        <span>Section 03 — Types</span>
+        <span>06 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     7. VU CONCEPT (CODE)
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">04</span>
+        <span>Virtual User</span>
+    </div>
+
+    <p class="eyebrow reveal">Section 04</p>
+    <h2 class="display reveal">VU<span class="accent">.</span> 가상 사용자.</h2>
+
+    <p class="lede reveal" style="margin-top: clamp(0.4rem, 1vh, 0.8rem);">
+        <strong style="color:var(--ink);">VU = 동시에 서버에 요청을 보내는 시뮬레이션된 사용자 1명.</strong><br>
+        VU 50명 = 동시에 50개의 요청이 들어오는 상황.
+    </p>
+
+    <div class="code-pane reveal">
+<span class="kw">export const</span> options <span class="kw">=</span> {
+    <span class="prop">vus</span>: <span class="num">50</span>,         <span class="comment">// 가상 사용자 50명</span>
+    <span class="prop">duration</span>: <span class="str">'30s'</span>  <span class="comment">// 30초 동안 유지</span>
+};
+    </div>
+
+    <div class="term-defs reveal">
+        <div class="term">
+            <div class="term-name">VU</div>
+            <div class="term-desc">"가짜 사용자 한 명." 사람이 하는 행동을 흉내. <strong>k6</strong></div>
+        </div>
+        <div class="term">
+            <div class="term-name">Thread</div>
+            <div class="term-desc">"일을 처리하는 작업자 1명." 1 Thread = 1 작업자. <strong>JMeter, nGrinder</strong></div>
+        </div>
+        <div class="term">
+            <div class="term-name">Agent</div>
+            <div class="term-desc">"부하를 대신 만드는 서버." 분산 부하 생성. <strong>nGrinder</strong></div>
+        </div>
+    </div>
+
+    <div class="foot-bar reveal" style="margin-top: clamp(0.6rem, 1.5vh, 1rem);">
+        <span>Section 04 — VU</span>
+        <span>07 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     8. 3 KPI OVERVIEW
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">05</span>
+        <span>3 Core Metrics</span>
+    </div>
+
+    <p class="eyebrow reveal">Section 05 · 핵심 지표</p>
+    <h2 class="display reveal">반드시 봐야 할<br><span class="accent">3가지 지표.</span></h2>
+
+    <div class="kpi-grid reveal">
+        <div class="kpi-card">
+            <div class="kpi-num">01</div>
+            <div class="kpi-content">
+                <div class="kpi-name"><span class="label">처리량</span>TPS</div>
+                <p class="kpi-desc">초당 처리 가능한 요청 수. 시스템의 최대 처리 용량을 가늠하는 1차 지표.</p>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-num">02</div>
+            <div class="kpi-content">
+                <div class="kpi-name"><span class="label">지연 시간</span>Latency</div>
+                <p class="kpi-desc">요청 → 응답까지 걸리는 시간. 평균이 아닌 <strong>P95·P99</strong>로 봐야 한다.</p>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-num">03</div>
+            <div class="kpi-content">
+                <div class="kpi-name"><span class="label">실패율</span>Error Rate</div>
+                <p class="kpi-desc">실패 요청 비율. 에러가 발생하기 시작하는 지점이 시스템 한계의 신호다.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="foot-bar reveal">
+        <span>Section 05 — Metrics Overview</span>
+        <span>08 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     9. TPS DETAIL
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">05·1</span>
+        <span>Throughput · TPS</span>
+    </div>
+
+    <p class="eyebrow reveal">처리량 · Transactions Per Second</p>
+    <h2 class="display reveal">① TPS<span class="accent">.</span></h2>
+
+    <div class="metric-row reveal">
+        <div>
+            <div class="metric-formula">
+TPS <span class="hi">=</span> VU 수 <span class="hi">÷</span> 평균 응답시간(초)
+
+<span style="color:#888;">예) VU=100, 응답시간=200ms (0.2s)</span>
+<span style="color:#888;">→ TPS = 100 ÷ 0.2 = </span><span class="res">500 TPS</span>
+            </div>
+            <p style="font-size:var(--small-size); color:var(--ink-soft); margin-top:clamp(0.5rem,1vw,0.8rem); line-height:1.5;">
+                응답시간이 느려지면 TPS도 자동으로 낮아진다는 사실이 공식에서 직관적으로 드러난다.
+            </p>
+        </div>
+
+        <ul class="bullet-list">
+            <li>VU가 증가하면 TPS도 <strong>증가</strong>한다.</li>
+            <li>그러나 어느 순간 증가가 <strong>멈춘다.</strong></li>
+            <li>이 지점이 → <strong>시스템의 최대 처리 용량 (Capacity).</strong></li>
+        </ul>
+    </div>
+
+    <div class="foot-bar reveal">
+        <span>Section 05·1 — TPS</span>
+        <span>09 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     10. LATENCY — AVERAGE TRAP
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">05·2</span>
+        <span>Latency · P95 / P99</span>
+    </div>
+
+    <p class="eyebrow reveal">지연 시간 · 평균의 함정</p>
+    <h2 class="display reveal">② Latency.<br><span class="accent" style="font-size:0.65em;">평균만 보면 왜곡된다.</span></h2>
+
+    <div class="metric-row reveal">
+        <div class="trap-box">
+<span class="t-line">요청 99개 → 100ms</span>
+<span class="t-line">요청  1개 → 3,000ms</span>
+<span class="t-out">평균 = 약 130ms</span>
+<span style="display:block; color:var(--ink-mute); font-size:0.85em; margin-top:0.6em;">겉보기엔 빠른 서비스이지만,<br>일부 사용자는 느린 응답을 경험한다.</span>
+        </div>
+
+        <ul class="bullet-list">
+            <li><strong>P95</strong> — 100개 중 95개는 이 시간 이하. "대부분의 사용자 경험"</li>
+            <li><strong>P99</strong> — 100개 중 99개는 이 시간 이하. "최악에 가까운 경험" · 병목 감지</li>
+            <li>실제 사용자 경험은 <strong>느린 요청이 좌우</strong>한다.</li>
+            <li>평균은 "전체 속도", P95·P99는 <strong>"실제로 겪는 느림."</strong></li>
+        </ul>
+    </div>
+
+    <div class="foot-bar reveal">
+        <span>Section 05·2 — Latency</span>
+        <span>10 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     11. LATENCY — LOAD INCREASE PATTERN
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">05·2</span>
+        <span>Load Increase Pattern</span>
+    </div>
+
+    <p class="eyebrow reveal">부하 증가 시 변화 패턴</p>
+    <h2 class="display reveal">P99는<br><span class="accent">가장 먼저 반응한다.</span></h2>
+
+    <div class="tbl-wrap reveal">
+        <table class="data-tbl">
+            <thead>
+                <tr>
+                    <th>구간</th>
+                    <th>평균</th>
+                    <th>P95</th>
+                    <th>P99</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="label">① 초기</td>
+                    <td>안정</td>
+                    <td>안정</td>
+                    <td>안정</td>
+                </tr>
+                <tr>
+                    <td class="label">② 임계점 도달</td>
+                    <td>거의 유지</td>
+                    <td>서서히 ↑</td>
+                    <td class="highlight">급격히 ↑</td>
+                </tr>
+                <tr>
+                    <td class="label">③ 한계 초과</td>
+                    <td>약간 ↑</td>
+                    <td>크게 ↑</td>
+                    <td class="highlight">급격히 ↑↑</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="reveal" style="font-size:var(--small-size); color:var(--ink-soft); margin-top:clamp(0.5rem, 1.2vh, 1rem); max-width:60ch; line-height:1.5;">
+        대부분의 서버는 내부적으로 <strong>큐(Queue) 기반</strong>으로 요청을 처리한다. 처리 한계를 넘으면 요청이 쌓이면서 대기 시간이 빠르게 증가한다.
+    </p>
+
+    <div class="foot-bar reveal">
+        <span>Section 05·2 — Load Pattern</span>
+        <span>11 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     12. ERROR RATE
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">05·3</span>
+        <span>Error Rate</span>
+    </div>
+
+    <p class="eyebrow reveal">실패율 · The Limit Signal</p>
+    <h2 class="display reveal">③ Error Rate.</h2>
+
+    <div class="metric-row reveal" style="grid-template-columns: 1fr 1.2fr;">
+        <div style="background:var(--accent); color:var(--bg); padding:clamp(1rem,2.5vw,2rem); display:flex; flex-direction:column; justify-content:center;">
+            <p style="font-family:var(--font-display); font-weight:700; font-size:var(--label-size); letter-spacing:0.2em; text-transform:uppercase; margin-bottom:clamp(0.5rem,1vw,0.8rem); opacity:0.85;">핵심 의미</p>
+            <p style="font-family:var(--font-display); font-weight:900; font-size:clamp(1.2rem,2.5vw,2rem); line-height:1.15; letter-spacing:-0.025em;">
+                에러가 발생하는 시점은<br>
+                <span style="font-size:1.3em; display:block; margin-top:0.2em;">시스템 한계의 신호.</span>
+            </p>
+        </div>
+        <div>
+            <p style="font-size:clamp(1rem,1.6vw,1.3rem); font-weight:600; margin-bottom:clamp(0.6rem,1.5vw,1.2rem); color:var(--ink);">반드시 체크할 항목.</p>
+            <ul class="bullet-list">
+                <li><strong>HTTP 5xx</strong> — 서버 에러 응답</li>
+                <li><strong>Timeout</strong> — 응답이 시간 내 안 옴</li>
+                <li><strong>Connection 실패</strong> — 연결 자체가 끊어짐</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="foot-bar reveal">
+        <span>Section 05·3 — Error Rate</span>
+        <span>12 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     13. IDEAL FLOW (4 STEPS)
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">06</span>
+        <span>Ideal Flow</span>
+    </div>
+
+    <p class="eyebrow reveal">Section 06 · 핵심 개념</p>
+    <h2 class="display reveal">시스템이 안정적으로 유지되는<br><span class="accent">전환 구간을 찾는 것.</span></h2>
+
+    <div class="flow-grid reveal">
+        <div class="flow-step">
+            <div class="step-n">01</div>
+            <h3>VU ↑ → TPS ↑</h3>
+            <p>사용자가 늘어나면 처리량도 비례해서 증가하는 안정 구간.</p>
+        </div>
+        <div class="flow-step">
+            <div class="step-n">02</div>
+            <h3>TPS 정체</h3>
+            <p>어느 순간 처리량 증가가 멈춘다 — Capacity 도달.</p>
+        </div>
+        <div class="flow-step">
+            <div class="step-n">03</div>
+            <h3>Latency ↑ (P99)</h3>
+            <p>큐가 쌓이면서 지연 시간이, 특히 P99가 먼저 튀어오른다.</p>
+        </div>
+        <div class="flow-step">
+            <div class="step-n">04</div>
+            <h3>Error 발생</h3>
+            <p>한계 초과. 에러 발생은 시스템이 더 이상 못 버틴다는 신호.</p>
+        </div>
+    </div>
+
+    <div class="foot-bar reveal">
+        <span>Section 06 — Ideal Flow</span>
+        <span>13 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     14. ENVIRONMENT — SEPARATION
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">07</span>
+        <span>Environment Setup</span>
+    </div>
+
+    <p class="eyebrow reveal">Section 07 · 환경 구성 원칙</p>
+    <h2 class="display reveal">부하 생성 서버는<br><span class="accent">분리해서 측정한다.</span></h2>
+
+    <div class="env-diagram reveal">
+        <div class="env-node">
+            <div class="env-label">Load Generator</div>
+            <h3>k6</h3>
+            <p>부하 생성 전용 서버. 트래픽을 만든다.</p>
+        </div>
+        <div class="env-arrow">→→→</div>
+        <div class="env-node target">
+            <div class="env-label">Target Server</div>
+            <h3>Spring Boot</h3>
+            <p>측정 대상. 순수한 성능만 평가.</p>
+        </div>
+    </div>
+
+    <p class="reveal" style="font-size:var(--small-size); color:var(--ink-soft); margin-top:clamp(0.6rem,1.5vh,1.2rem); max-width:70ch; line-height:1.55;">
+        같은 서버에서 k6와 대상 앱을 동시에 실행하면, 측정된 Latency에 <strong>실제 처리 지연과 부하 생성기의 자원 경합</strong>이 함께 섞인다. 서버 성능과 도구 영향을 구분하기 어려워진다.
+    </p>
+
+    <div class="foot-bar reveal">
+        <span>Section 07 — Environment</span>
+        <span>14 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     15. TOOL COMPARISON TABLE
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">08</span>
+        <span>Tool Comparison</span>
+    </div>
+
+    <p class="eyebrow reveal">Section 08 · 도구 비교</p>
+    <h2 class="display reveal">k6 · JMeter · nGrinder.</h2>
+
+    <div class="tbl-wrap reveal">
+        <table class="data-tbl">
+            <thead>
+                <tr>
+                    <th>항목</th>
+                    <th>k6</th>
+                    <th>JMeter</th>
+                    <th>nGrinder</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="label">작성 방식</td>
+                    <td>JavaScript 코드</td>
+                    <td>GUI (XML 저장)</td>
+                    <td>웹 UI + Groovy</td>
+                </tr>
+                <tr>
+                    <td class="label">메모리 / VU</td>
+                    <td class="highlight">~100 KB</td>
+                    <td>~1 MB (10× ↑)</td>
+                    <td>JVM (Agent 분산)</td>
+                </tr>
+                <tr>
+                    <td class="label">동시성 모델</td>
+                    <td>Goroutine + Event Loop</td>
+                    <td>Thread per VU</td>
+                    <td>Thread per VU (Agent 분산)</td>
+                </tr>
+                <tr>
+                    <td class="label">분산 부하</td>
+                    <td>k6 Operator (k8s)</td>
+                    <td>JMeter 서버 분산</td>
+                    <td class="highlight">Controller-Agent 네이티브</td>
+                </tr>
+                <tr>
+                    <td class="label">CI/CD</td>
+                    <td class="highlight">CLI 친화적</td>
+                    <td>별도 설정 필요</td>
+                    <td>가능하지만 번거로움</td>
+                </tr>
+                <tr>
+                    <td class="label">Git 협업</td>
+                    <td class="highlight">코드 기반</td>
+                    <td>XML 추적 어려움</td>
+                    <td>코드 + 웹 UI</td>
+                </tr>
+                <tr>
+                    <td class="label">첫 출시</td>
+                    <td>2017년</td>
+                    <td>1998년</td>
+                    <td>2011년 (네이버)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="foot-bar reveal">
+        <span>Section 08 — Comparison</span>
+        <span>15 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     16. TOOL CARDS (3-up)
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">08</span>
+        <span>When to Use Each</span>
+    </div>
+
+    <p class="eyebrow reveal">어느 도구를 언제 쓰나?</p>
+    <h2 class="display reveal">상황에 맞는 도구 선택<span class="accent">.</span></h2>
+
+    <div class="tool-grid reveal">
+        <div class="tool-card hero">
+            <div class="tool-tagline">Performance as Code</div>
+            <div class="tool-name">k6</div>
+            <p class="tool-desc">JS 기반 코드. Goroutine 이벤트 루프로 가벼움 (1/10 메모리). Grafana + Prometheus 연동이 강력. 단점은 GUI 없음, JDBC/SMTP 약함.</p>
+            <div class="tool-when">→ 일반적인 웹 API + CI/CD 자동화</div>
+        </div>
+        <div class="tool-card">
+            <div class="tool-tagline">Legacy Standard</div>
+            <div class="tool-name">JMeter</div>
+            <p class="tool-desc">1998년부터 GUI로 누구나. <strong>JDBC·FTP·JMS·SMTP·LDAP</strong> 등 광범위한 프로토콜 지원. 단점은 무거움, XML로 Git 추적 곤란, 코드 리뷰 사실상 불가.</p>
+            <div class="tool-when">→ DB·메일·메시지큐 + GUI 작업</div>
+        </div>
+        <div class="tool-card">
+            <div class="tool-tagline">Distributed Native</div>
+            <div class="tool-name">nGrinder</div>
+            <p class="tool-desc">네이버 사내 도구 → 2011 오픈소스. <strong>Controller + Agent</strong> 네이티브 분산 구조. 웹 UI에서 모니터링까지 한 곳. 단점은 진입 장벽 높음.</p>
+            <div class="tool-when">→ 수십만 VU 대규모 분산 + 사내 공용</div>
+        </div>
+    </div>
+
+    <div class="foot-bar reveal">
+        <span>Section 08 — Tools</span>
+        <span>16 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     17. CLOSING — KEY TAKEAWAYS
+     =========================================== -->
+<section class="slide">
+    <div class="top-bar reveal">
+        <span class="num">10</span>
+        <span>Key Takeaways</span>
+    </div>
+
+    <p class="eyebrow reveal">Section 09–10 · 핵심 정리</p>
+
+    <p class="closing-quote reveal">
+        성능 테스트는<br>
+        <span class="strike">서버가 언제 한계에 부딪히는지 보는 테스트</span>가 아니라,<br>
+        <span class="yes">어디까지 안정적으로 처리할 수 있는지</span><br>
+        <span class="yes">찾아가는 과정이다.</span>
+    </p>
+
+    <div class="closing-grid reveal">
+        <div class="closing-metric">
+            <div class="cm-name">TPS</div>
+            <div class="cm-meaning">처리량</div>
+            <p class="cm-desc">최대 처리 용량 파악</p>
+        </div>
+        <div class="closing-metric">
+            <div class="cm-name">P99</div>
+            <div class="cm-meaning">지연 시간</div>
+            <p class="cm-desc">병목 구간 조기 감지</p>
+        </div>
+        <div class="closing-metric">
+            <div class="cm-name">Error Rate</div>
+            <div class="cm-meaning">실패율</div>
+            <p class="cm-desc">한계 초과 시점 감지</p>
+        </div>
+    </div>
+
+    <p class="reveal" style="font-size:var(--small-size); color:var(--ink-mute); margin-top:clamp(0.8rem,2vh,1.5rem); text-align:center; font-family:var(--font-display); font-weight:700; letter-spacing:0.15em; text-transform:uppercase;">
+        지표를 읽는 눈 + 상황에 맞는 도구 선택 = 진짜 실력
+    </p>
+
+    <div class="foot-bar reveal">
+        <span>END · Thank You</span>
+        <span>17 / 17</span>
+    </div>
+</section>
+
+
+<!-- ===========================================
+     SLIDE PRESENTATION CONTROLLER
+     - Keyboard nav (arrows, space, page up/down, home/end)
+     - Touch/swipe support
+     - Mouse wheel
+     - Progress bar
+     - Navigation dots
+     - Intersection observer for animations
+     =========================================== -->
+<script>
+class SlidePresentation {
+    constructor() {
+        this.slides = Array.from(document.querySelectorAll('.slide'));
+        this.currentSlide = 0;
+        this.isAnimating = false;
+
+        this.progressBar = document.getElementById('progressBar');
+        this.navDotsContainer = document.getElementById('navDots');
+
+        this.setupNavDots();
+        this.setupIntersectionObserver();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupWheelNav();
+        this.setupProgressBar();
+    }
+
+    /* ---------------------------
+       Generate nav dots — clear first to avoid duplicates
+       on file re-open (outerHTML capture would otherwise
+       persist the rendered dots on disk)
+       --------------------------- */
+    setupNavDots() {
+        this.navDotsContainer.innerHTML = '';
+        this.slides.forEach((_, idx) => {
+            const dot = document.createElement('button');
+            dot.setAttribute('aria-label', `Go to slide ${idx + 1}`);
+            if (idx === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => this.goToSlide(idx));
+            this.navDotsContainer.appendChild(dot);
+        });
+    }
+
+    /* ---------------------------
+       IntersectionObserver — adds .visible class so
+       CSS reveal transitions fire as slide enters view
+       --------------------------- */
+    setupIntersectionObserver() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+                    entry.target.classList.add('visible');
+                    const idx = this.slides.indexOf(entry.target);
+                    if (idx !== -1) {
+                        this.currentSlide = idx;
+                        this.updateNavDots();
+                        this.updateProgress();
+                    }
+                }
+            });
+        }, { threshold: [0, 0.5, 1] });
+
+        this.slides.forEach(slide => observer.observe(slide));
+    }
+
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowDown': case 'ArrowRight':
+                case 'PageDown': case ' ':
+                    e.preventDefault(); this.next(); break;
+                case 'ArrowUp': case 'ArrowLeft': case 'PageUp':
+                    e.preventDefault(); this.prev(); break;
+                case 'Home':
+                    e.preventDefault(); this.goToSlide(0); break;
+                case 'End':
+                    e.preventDefault(); this.goToSlide(this.slides.length - 1); break;
+            }
+        });
+    }
+
+    setupTouchNav() {
+        let touchStartY = 0;
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+        document.addEventListener('touchend', (e) => {
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(dy) < 50 && Math.abs(dx) < 50) return;
+            if (Math.abs(dy) > Math.abs(dx)) {
+                if (dy < 0) this.next(); else this.prev();
+            }
+        }, { passive: true });
+    }
+
+    /* ---------------------------
+       Wheel nav with debounce — scroll snap handles
+       most cases, this prevents over-scrolling past slides
+       --------------------------- */
+    setupWheelNav() {
+        let wheelTimeout = null;
+        document.addEventListener('wheel', (e) => {
+            if (this.isAnimating) return;
+            clearTimeout(wheelTimeout);
+            wheelTimeout = setTimeout(() => {
+                this.isAnimating = false;
+            }, 250);
+        }, { passive: true });
+    }
+
+    setupProgressBar() {
+        this.updateProgress();
+    }
+
+    updateProgress() {
+        const pct = (this.currentSlide / Math.max(1, this.slides.length - 1)) * 100;
+        this.progressBar.style.width = pct + '%';
+    }
+
+    updateNavDots() {
+        const dots = this.navDotsContainer.querySelectorAll('button');
+        dots.forEach((d, i) => d.classList.toggle('active', i === this.currentSlide));
+    }
+
+    next() {
+        if (this.currentSlide < this.slides.length - 1) {
+            this.goToSlide(this.currentSlide + 1);
+        }
+    }
+    prev() {
+        if (this.currentSlide > 0) {
+            this.goToSlide(this.currentSlide - 1);
+        }
+    }
+    goToSlide(idx) {
+        idx = Math.max(0, Math.min(idx, this.slides.length - 1));
+        this.slides[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.currentSlide = idx;
+        this.updateNavDots();
+        this.updateProgress();
+    }
+}
+
+/* Initialize after DOM ready */
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => new SlidePresentation());
+} else {
+    new SlidePresentation();
+}
+
+/* First slide should be visible immediately on load */
+document.querySelector('.slide').classList.add('visible');
+</script>
+
+</body>
+</html>
