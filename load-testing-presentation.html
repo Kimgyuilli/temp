@@ -46,8 +46,8 @@
             <span class="accent">Performance Testing.</span>
         </h1>
         <p class="lede reveal">
-            서비스가 안정적으로 처리할 수 있는<br>
-            적정한 범위를 찾아가는 과정.
+            성능 테스트 스터디에서,<br>
+            오늘은 부하 테스트를 중심으로 본다.
         </p>
     </div>
 
@@ -78,8 +78,8 @@
 
         <p class="def-key reveal">
             <span class="arrow">→</span>
-            "최대 몇 명까지 가능한가"가 아니라,
-            <strong>실제 환경에서 문제없이 동작하는 범위를 확인하는 것.</strong>
+            성능 테스트의 여러 영역 중,
+            <strong>예상 트래픽을 안정적으로 처리하는 범위를 확인하는 과정.</strong>
         </p>
     </div>
 
@@ -171,13 +171,13 @@
         <article class="case-card">
             <div class="case-num">03</div>
             <h3>예스24 서비스 중단</h3>
-            <p>2025년 6월, 도서·티켓·eBook 등 온라인 서비스가 10일간 중단됐다. 부하가 아닌 랜섬웨어 사례지만, 시스템 정지가 만드는 연쇄 영향을 잘 보여준다.</p>
+            <p>2025년 6월, 랜섬웨어로 도서·티켓·eBook 등 주요 온라인 서비스가 중단됐고 일부 서비스는 며칠 뒤 재개됐다. 부하 사례는 아니지만, 시스템 정지가 만드는 연쇄 영향을 보여준다.</p>
             <div class="case-facts">
                 <div class="case-fact"><strong>Cause</strong><span>랜섬웨어 장애</span></div>
                 <div class="case-fact"><strong>Impact</strong><span>도서·티켓 서비스 중단</span></div>
                 <div class="case-impact"><span style="width:95%;"></span></div>
             </div>
-            <div class="case-tag">2025.06 · 10일</div>
+            <div class="case-tag">2025.06 · 운영 리스크</div>
         </article>
     </div>
 
@@ -216,7 +216,7 @@
         <div class="opt-good">
             <div class="opt-symbol">✓</div>
             <h3>최소 비용으로 안정 확보</h3>
-            <p>성능 테스트는 <strong>"안정성을 확보하는 최소 비용 구조"</strong>를 찾기 위한 과정이다. 한계를 알아야 비용을 줄이면서도 안정적으로 운영할 수 있다.</p>
+            <p>부하 테스트는 <strong>"안정성을 확보하는 최소 비용 구조"</strong>를 찾기 위한 과정이다. 한계를 알아야 비용을 줄이면서도 안정적으로 운영할 수 있다.</p>
             <div class="cost-signal">
                 <div class="signal-title">Measured Scaling</div>
                 <div class="decision-chain">
@@ -923,7 +923,7 @@ TPS <span class="hi">≈</span> VU 수 <span class="hi">÷</span> (응답시간 
     <p class="eyebrow reveal">Section 09 · 핵심 정리</p>
 
     <p class="closing-quote reveal">
-        성능 테스트는<br>
+        오늘 다룬 부하 테스트는<br>
         <span class="strike">서버가 언제 한계에 부딪히는지 보는 테스트</span>가 아니라,<br>
         <span class="yes">어디까지 안정적으로 처리할 수 있는지</span><br>
         <span class="yes">찾아가는 과정이다.</span>
