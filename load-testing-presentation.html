@@ -324,7 +324,7 @@
 
     <p class="lede reveal" style="margin-top: clamp(0.4rem, 1vh, 0.8rem);">
         <strong style="color:var(--ink);">VU = 사용자 행동을 반복 실행하는 시뮬레이션된 사용자 1명.</strong><br>
-        VU 50명 = 최대 50개의 사용자 시나리오가 동시에 실행되는 상황.
+        같은 가상 사용자라도 도구마다 실행 모델이 다르다.
     </p>
 
     <div class="code-pane reveal">
@@ -334,18 +334,74 @@
 };
     </div>
 
-    <div class="term-defs reveal">
-        <div class="term">
-            <div class="term-name">VU</div>
-            <div class="term-desc">"가짜 사용자 한 명." 사람이 하는 행동을 흉내. <strong>k6</strong></div>
+    <div class="tool-flow-compare reveal">
+        <div class="tool-flow-row k6">
+            <div class="flow-tool">k6</div>
+            <div class="flow-box">
+                <span class="flow-title">Scenario</span>
+                <span class="flow-sub">로그인 · 조회 · 클릭</span>
+            </div>
+            <div class="flow-box">
+                <span class="flow-title">VU</span>
+                <span class="flow-sub">사용자 역할</span>
+            </div>
+            <div class="flow-box">
+                <span class="flow-title">k6 Runtime</span>
+                <span class="flow-sub">실행 엔진</span>
+            </div>
+            <div class="flow-box end">
+                <span class="flow-title">Target</span>
+                <span class="flow-sub">요청 처리</span>
+            </div>
+            <div class="flow-box empty"></div>
+            <div class="flow-note"><strong>핵심:</strong> VU와 OS Thread가 1:1로 매핑되지 않는다.</div>
         </div>
-        <div class="term">
-            <div class="term-name">Thread</div>
-            <div class="term-desc">"일을 처리하는 작업자 1명." 1 Thread = 1 작업자. <strong>JMeter, nGrinder</strong></div>
+
+        <div class="tool-flow-row">
+            <div class="flow-tool">JMeter</div>
+            <div class="flow-box">
+                <span class="flow-title">Scenario</span>
+                <span class="flow-sub">테스트 플랜</span>
+            </div>
+            <div class="flow-box">
+                <span class="flow-title">Thread Group</span>
+                <span class="flow-sub">사용자 그룹</span>
+            </div>
+            <div class="flow-box">
+                <span class="flow-title">Thread</span>
+                <span class="flow-sub">작업자 단위</span>
+            </div>
+            <div class="flow-box end">
+                <span class="flow-title">Target</span>
+                <span class="flow-sub">요청 처리</span>
+            </div>
+            <div class="flow-box empty"></div>
+            <div class="flow-note"><strong>핵심:</strong> Thread 기반으로 동시 사용자를 표현한다.</div>
         </div>
-        <div class="term">
-            <div class="term-name">Agent</div>
-            <div class="term-desc">"부하를 대신 만드는 서버." 분산 부하 생성. <strong>nGrinder</strong></div>
+
+        <div class="tool-flow-row">
+            <div class="flow-tool">nGrinder</div>
+            <div class="flow-box">
+                <span class="flow-title">Scenario</span>
+                <span class="flow-sub">Groovy 스크립트</span>
+            </div>
+            <div class="flow-box">
+                <span class="flow-title">Controller</span>
+                <span class="flow-sub">테스트 지시</span>
+            </div>
+            <div class="flow-box">
+                <span class="flow-title">Agent</span>
+                <span class="flow-sub">부하 생성</span>
+            </div>
+            <div class="flow-box">
+                <span class="flow-title">Thread</span>
+                <span class="flow-sub">작업자 단위</span>
+            </div>
+            <div class="flow-box end">
+                <span class="flow-title">Target</span>
+                <span class="flow-sub">요청 처리</span>
+            </div>
+            <div class="flow-note"><strong>핵심:</strong> Controller가 지시하고 Agent가 분산 부하를 만든다.</div>
         </div>
     </div>
 
