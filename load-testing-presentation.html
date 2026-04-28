@@ -342,6 +342,36 @@ h2.display .accent { color: var(--accent); }
     border-top: 1px solid var(--line);
     padding-top: clamp(0.4rem, 0.8vw, 0.6rem);
 }
+.case-facts {
+    display: grid;
+    gap: clamp(0.25rem, 0.6vw, 0.45rem);
+}
+.case-fact {
+    display: grid;
+    grid-template-columns: 3.4em 1fr;
+    gap: 0.45rem;
+    align-items: baseline;
+    font-size: clamp(0.68rem, 0.95vw, 0.82rem);
+    line-height: 1.35;
+    color: var(--ink-soft);
+}
+.case-fact strong {
+    font-family: var(--font-display); font-weight: 800;
+    color: var(--accent);
+    font-size: 0.86em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.case-impact {
+    height: 5px;
+    background: #eeeeee;
+    overflow: hidden;
+}
+.case-impact span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+}
 
 /* ===========================================
    5. COST vs STABILITY (양면 비교)
@@ -376,6 +406,53 @@ h2.display .accent { color: var(--accent); }
 }
 .opt-bad p, .opt-good p {
     font-size: var(--body-size); color: var(--ink-soft);
+}
+.cost-signal {
+    margin-top: auto;
+    border-top: 1px solid var(--line);
+    padding-top: clamp(0.5rem, 1vw, 0.85rem);
+}
+.cost-signal .signal-title {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: var(--label-size);
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: clamp(0.35rem, 0.7vw, 0.55rem);
+}
+.cost-bars {
+    display: grid;
+    gap: clamp(0.3rem, 0.7vw, 0.5rem);
+}
+.cost-bar {
+    display: grid;
+    grid-template-columns: 4.2em 1fr 2.8em;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: var(--small-size);
+    color: var(--ink-soft);
+}
+.cost-bar .track {
+    height: 7px;
+    background: rgba(10,10,10,0.1);
+}
+.cost-bar .fill {
+    display: block;
+    height: 100%;
+    background: var(--ink);
+}
+.opt-good .cost-bar .fill { background: var(--accent); }
+.decision-chain {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(0.35rem, 0.8vw, 0.55rem);
+}
+.decision-chain span {
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.55);
+    padding: clamp(0.35rem, 0.8vw, 0.55rem);
+    font-size: var(--small-size);
+    font-weight: 700;
+    text-align: center;
 }
 
 /* ===========================================
@@ -416,6 +493,45 @@ h2.display .accent { color: var(--accent); }
     margin-right: 0.4em; font-size: 0.7em; vertical-align: middle;
 }
 .data-tbl .highlight { color: var(--accent); font-weight: 700; }
+.pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(0.5rem, 1vw, 0.9rem);
+    margin-top: clamp(0.5rem, 1.2vh, 0.9rem);
+}
+.pattern-card {
+    border-top: 2px solid var(--ink);
+    padding-top: clamp(0.35rem, 0.8vw, 0.55rem);
+}
+.pattern-card .pattern-name {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: var(--label-size);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.35rem;
+}
+.sparkline {
+    height: clamp(42px, 8vh, 72px);
+    position: relative;
+    background:
+        linear-gradient(to top, transparent 49%, rgba(10,10,10,0.08) 50%, transparent 51%),
+        linear-gradient(to right, rgba(10,10,10,0.07) 1px, transparent 1px);
+    background-size: 100% 100%, 25% 100%;
+    border-left: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+}
+.sparkline::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    clip-path: var(--shape);
+}
+.spark-load { --shape: polygon(0 78%, 18% 78%, 28% 40%, 100% 40%, 100% 47%, 28% 47%, 18% 85%, 0 85%); }
+.spark-stress { --shape: polygon(0 82%, 18% 72%, 38% 58%, 58% 42%, 78% 24%, 100% 12%, 100% 19%, 78% 31%, 58% 49%, 38% 65%, 18% 79%, 0 89%); }
+.spark-spike { --shape: polygon(0 82%, 40% 82%, 50% 10%, 60% 82%, 100% 82%, 100% 89%, 60% 89%, 50% 23%, 40% 89%, 0 89%); }
+.spark-soak { --shape: polygon(0 62%, 100% 62%, 100% 69%, 0 69%); }
 
 /* ===========================================
    7. CODE BLOCK (VU 슬라이드)
@@ -509,6 +625,51 @@ h2.display .accent { color: var(--accent); }
     color: var(--ink-soft); line-height: 1.5;
     margin-top: clamp(0.3rem, 0.8vw, 0.6rem);
 }
+.kpi-signal {
+    margin-top: auto;
+    border-top: 1px solid var(--line);
+    padding-top: clamp(0.55rem, 1vw, 0.85rem);
+}
+.kpi-spark {
+    height: clamp(44px, 8vh, 74px);
+    position: relative;
+    background:
+        linear-gradient(to right, rgba(10,10,10,0.07) 1px, transparent 1px),
+        linear-gradient(to top, rgba(10,10,10,0.07) 1px, transparent 1px);
+    background-size: 25% 100%, 100% 50%;
+    border-left: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+}
+.kpi-spark::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    clip-path: var(--kpi-shape);
+}
+.kpi-throughput { --kpi-shape: polygon(0 82%, 18% 65%, 36% 45%, 55% 34%, 75% 34%, 100% 34%, 100% 42%, 75% 42%, 55% 42%, 36% 53%, 18% 73%, 0 90%); }
+.kpi-latency { --kpi-shape: polygon(0 76%, 45% 76%, 63% 68%, 78% 42%, 92% 20%, 100% 16%, 100% 24%, 92% 29%, 78% 51%, 63% 77%, 45% 84%, 0 84%); }
+.kpi-error { --kpi-shape: polygon(0 86%, 62% 86%, 70% 78%, 76% 86%, 82% 55%, 88% 86%, 94% 28%, 100% 86%, 100% 94%, 94% 43%, 88% 94%, 82% 68%, 76% 94%, 70% 86%, 62% 94%, 0 94%); }
+.kpi-points {
+    display: grid;
+    gap: clamp(0.25rem, 0.6vw, 0.4rem);
+    margin-top: clamp(0.45rem, 0.9vw, 0.65rem);
+}
+.kpi-point {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.6rem;
+    font-size: clamp(0.66rem, 0.95vw, 0.82rem);
+    line-height: 1.25;
+    color: var(--ink-soft);
+}
+.kpi-point strong {
+    font-family: var(--font-display);
+    font-weight: 800;
+    color: var(--ink);
+    white-space: nowrap;
+}
 
 /* ===========================================
    9-12. METRIC DETAIL SLIDES
@@ -554,6 +715,33 @@ h2.display .accent { color: var(--accent); }
 }
 .trap-box .t-line { display: block; }
 .trap-box .t-out { color: var(--accent); font-weight: 700; margin-top: 0.5em; display: block; }
+.avg-example {
+    margin-top: clamp(0.7rem, 1.4vw, 1rem);
+    padding-top: clamp(0.6rem, 1vw, 0.8rem);
+    border-top: 1px solid rgba(10,10,10,0.16);
+}
+.avg-example .avg-label {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--label-size);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.35rem;
+}
+.avg-example .avg-note {
+    display: block;
+    color: var(--ink-soft);
+    font-size: 0.86em;
+    line-height: 1.55;
+}
+.avg-example .avg-result {
+    display: block;
+    color: var(--ink);
+    font-weight: 700;
+    margin-top: 0.35rem;
+}
 
 /* ===========================================
    13. IDEAL FLOW (4단계)
@@ -588,6 +776,84 @@ h2.display .accent { color: var(--accent); }
     color: var(--ink-soft); line-height: 1.45;
     margin-top: clamp(0.4rem, 1vw, 0.8rem);
 }
+.flow-visual {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: clamp(0.8rem, 1.6vw, 1.4rem);
+    flex: 1; min-height: 0;
+    margin-top: clamp(0.8rem, 2vh, 1.3rem);
+}
+.flow-visual .flow-grid {
+    margin-top: 0;
+    grid-template-columns: repeat(2, 1fr);
+}
+.capacity-chart {
+    border: 2px solid var(--ink);
+    padding: clamp(0.7rem, 1.5vw, 1.2rem);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--bg);
+}
+.capacity-chart .chart-title {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: var(--label-size);
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--accent);
+}
+.capacity-plot {
+    position: relative;
+    flex: 1;
+    min-height: 180px;
+    margin-top: clamp(0.5rem, 1vw, 0.8rem);
+    border-left: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    background:
+        linear-gradient(to top, transparent 24%, rgba(10,10,10,0.06) 25%, transparent 26%),
+        linear-gradient(to right, transparent 24%, rgba(10,10,10,0.06) 25%, transparent 26%);
+    background-size: 100% 25%, 25% 100%;
+}
+.capacity-plot .line {
+    position: absolute;
+    inset: 0;
+    border-radius: 0;
+}
+.capacity-plot .tps {
+    background: var(--ink);
+    clip-path: polygon(4% 80%, 22% 64%, 42% 42%, 58% 34%, 78% 34%, 96% 34%, 96% 39%, 78% 39%, 58% 39%, 42% 47%, 22% 69%, 4% 85%);
+}
+.capacity-plot .latency {
+    background: var(--accent);
+    clip-path: polygon(4% 84%, 40% 82%, 58% 76%, 72% 48%, 88% 20%, 96% 12%, 96% 18%, 88% 27%, 72% 55%, 58% 82%, 40% 88%, 4% 90%);
+}
+.capacity-plot .limit {
+    position: absolute;
+    top: 0; bottom: 0; left: 58%;
+    border-left: 2px dashed var(--accent);
+}
+.capacity-plot .limit span {
+    position: absolute;
+    top: 0.4rem; left: 0.45rem;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: var(--label-size);
+    color: var(--accent);
+    white-space: nowrap;
+}
+.capacity-legend {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    margin-top: clamp(0.4rem, 0.8vw, 0.6rem);
+    font-size: var(--small-size);
+    color: var(--ink-soft);
+}
+.capacity-legend span::before {
+    content: '';
+    display: inline-block;
+    width: 1.1em; height: 0.28em;
+    margin-right: 0.4em;
+    vertical-align: middle;
+    background: var(--ink);
+}
+.capacity-legend .lat::before { background: var(--accent); }
 
 /* ===========================================
    14. ENVIRONMENT DIAGRAM
@@ -678,6 +944,39 @@ h2.display .accent { color: var(--accent); }
     font-weight: 600;
 }
 .tool-card.hero .tool-when { border-top-color: rgba(255,255,255,0.3); }
+.tool-fit {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(0.3rem, 0.7vw, 0.5rem);
+    margin-top: auto;
+}
+.fit-chip {
+    border: 1px solid var(--line);
+    padding: clamp(0.3rem, 0.7vw, 0.5rem);
+    min-height: 46px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.fit-chip b {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(0.55rem, 0.75vw, 0.68rem);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent);
+    line-height: 1.1;
+}
+.fit-chip span {
+    font-size: clamp(0.62rem, 0.9vw, 0.78rem);
+    line-height: 1.25;
+    color: var(--ink-soft);
+    margin-top: 0.2rem;
+}
+.tool-card.hero .fit-chip {
+    border-color: rgba(255,255,255,0.28);
+    background: rgba(255,255,255,0.08);
+}
+.tool-card.hero .fit-chip b,
+.tool-card.hero .fit-chip span { color: var(--bg); }
 
 /* ===========================================
    17. CLOSING SLIDE
@@ -767,6 +1066,8 @@ h2.display .accent { color: var(--accent); }
     .grid-3, .kpi-grid, .tool-grid, .term-defs, .closing-grid, .flow-grid {
         grid-template-columns: 1fr 1fr !important;
     }
+    .pattern-grid, .tool-fit { grid-template-columns: repeat(2, 1fr); }
+    .flow-visual { grid-template-columns: 1fr; }
     .split-2, .metric-row { grid-template-columns: 1fr !important; }
     .nav-dots, .keyboard-hint { display: none; }
 }
@@ -774,6 +1075,7 @@ h2.display .accent { color: var(--accent); }
     .grid-3, .kpi-grid, .tool-grid, .term-defs, .closing-grid, .flow-grid {
         grid-template-columns: 1fr !important;
     }
+    .pattern-grid, .tool-fit, .decision-chain { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -910,6 +1212,11 @@ h2.display .accent { color: var(--accent); }
             <div class="case-num">01</div>
             <h3>대학 수강신청</h3>
             <p>명지대는 L4 스위치 과부하로 일정이 연기됐고, 이화여대는 자정까지 변경 기간을 연장했지만 재차 중단. 건국대는 한 학기 4번 중 정상 진행이 1번에 그쳤다.</p>
+            <div class="case-facts">
+                <div class="case-fact"><strong>Cause</strong><span>동시 접속 집중</span></div>
+                <div class="case-fact"><strong>Impact</strong><span>신청 지연·일정 변경</span></div>
+                <div class="case-impact"><span style="width:82%;"></span></div>
+            </div>
             <div class="case-tag">매 학기 반복</div>
         </article>
 
@@ -917,6 +1224,11 @@ h2.display .accent { color: var(--accent); }
             <div class="case-num">02</div>
             <h3>콘서트·뮤지컬 티켓팅</h3>
             <p>인터파크는 대기열로 트래픽을 분산 처리. 예스24는 대기열 없이 일괄 입장하는 구조로 로그인 해제, 예매 버튼 누락 등 정합성 이슈가 발생했다.</p>
+            <div class="case-facts">
+                <div class="case-fact"><strong>Cause</strong><span>짧은 시간 피크</span></div>
+                <div class="case-fact"><strong>Impact</strong><span>대기열·예매 정합성</span></div>
+                <div class="case-impact"><span style="width:76%;"></span></div>
+            </div>
             <div class="case-tag">동시 접속 집중</div>
         </article>
 
@@ -924,6 +1236,11 @@ h2.display .accent { color: var(--accent); }
             <div class="case-num">03</div>
             <h3>예스24 서비스 중단</h3>
             <p>2025년 6월, 도서·티켓·eBook 등 온라인 서비스가 10일간 중단됐다. 부하가 아닌 랜섬웨어 사례지만, 시스템 정지가 만드는 연쇄 영향을 잘 보여준다.</p>
+            <div class="case-facts">
+                <div class="case-fact"><strong>Cause</strong><span>랜섬웨어 장애</span></div>
+                <div class="case-fact"><strong>Impact</strong><span>도서·티켓 서비스 중단</span></div>
+                <div class="case-impact"><span style="width:95%;"></span></div>
+            </div>
             <div class="case-tag">2025.06 · 10일</div>
         </article>
     </div>
@@ -952,11 +1269,26 @@ h2.display .accent { color: var(--accent); }
             <div class="opt-symbol">✕</div>
             <h3>무조건 큰 서버</h3>
             <p>인프라 비용은 트래픽 대비 계속 증가하고, 피크 시간을 기준 잡으면 대부분 시간이 낭비된다. 오토스케일링 기준점도 결국 측정값이 있어야 정할 수 있다.</p>
+            <div class="cost-signal">
+                <div class="signal-title">Over-provisioning</div>
+                <div class="cost-bars">
+                    <div class="cost-bar"><span>비용</span><span class="track"><span class="fill" style="width:92%;"></span></span><strong>높음</strong></div>
+                    <div class="cost-bar"><span>활용률</span><span class="track"><span class="fill" style="width:34%;"></span></span><strong>낮음</strong></div>
+                </div>
+            </div>
         </div>
         <div class="opt-good">
             <div class="opt-symbol">✓</div>
             <h3>최소 비용으로 안정 확보</h3>
             <p>성능 테스트는 <strong>"안정성을 확보하는 최소 비용 구조"</strong>를 찾기 위한 과정이다. 한계를 알아야 비용을 줄이면서도 안정적으로 운영할 수 있다.</p>
+            <div class="cost-signal">
+                <div class="signal-title">Measured Scaling</div>
+                <div class="decision-chain">
+                    <span>측정값</span>
+                    <span>임계점</span>
+                    <span>스케일 기준</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1011,6 +1343,24 @@ h2.display .accent { color: var(--accent); }
                 </tr>
             </tbody>
         </table>
+        <div class="pattern-grid">
+            <div class="pattern-card">
+                <div class="pattern-name">Load</div>
+                <div class="sparkline spark-load"></div>
+            </div>
+            <div class="pattern-card">
+                <div class="pattern-name">Stress</div>
+                <div class="sparkline spark-stress"></div>
+            </div>
+            <div class="pattern-card">
+                <div class="pattern-name">Spike</div>
+                <div class="sparkline spark-spike"></div>
+            </div>
+            <div class="pattern-card">
+                <div class="pattern-name">Soak</div>
+                <div class="sparkline spark-soak"></div>
+            </div>
+        </div>
     </div>
 
     <p class="reveal" style="font-size: var(--small-size); color: var(--ink-mute); margin-top: clamp(0.5rem, 1.2vh, 1rem);">
@@ -1089,6 +1439,13 @@ h2.display .accent { color: var(--accent); }
                 <div class="kpi-name"><span class="label">처리량</span>TPS</div>
                 <p class="kpi-desc">초당 처리 가능한 요청 수. 시스템의 최대 처리 용량을 가늠하는 1차 지표.</p>
             </div>
+            <div class="kpi-signal">
+                <div class="kpi-spark kpi-throughput"></div>
+                <div class="kpi-points">
+                    <div class="kpi-point"><strong>신호</strong><span>증가 후 정체</span></div>
+                    <div class="kpi-point"><strong>의미</strong><span>Capacity 도달</span></div>
+                </div>
+            </div>
         </div>
         <div class="kpi-card">
             <div class="kpi-num">02</div>
@@ -1096,12 +1453,26 @@ h2.display .accent { color: var(--accent); }
                 <div class="kpi-name"><span class="label">지연 시간</span>Latency</div>
                 <p class="kpi-desc">요청 → 응답까지 걸리는 시간. 평균이 아닌 <strong>P95·P99</strong>로 봐야 한다.</p>
             </div>
+            <div class="kpi-signal">
+                <div class="kpi-spark kpi-latency"></div>
+                <div class="kpi-points">
+                    <div class="kpi-point"><strong>신호</strong><span>P99 급상승</span></div>
+                    <div class="kpi-point"><strong>의미</strong><span>큐 대기 증가</span></div>
+                </div>
+            </div>
         </div>
         <div class="kpi-card">
             <div class="kpi-num">03</div>
             <div class="kpi-content">
                 <div class="kpi-name"><span class="label">실패율</span>Error Rate</div>
                 <p class="kpi-desc">실패 요청 비율. 에러가 발생하기 시작하는 지점이 시스템 한계의 신호다.</p>
+            </div>
+            <div class="kpi-signal">
+                <div class="kpi-spark kpi-error"></div>
+                <div class="kpi-points">
+                    <div class="kpi-point"><strong>신호</strong><span>5xx·Timeout</span></div>
+                    <div class="kpi-point"><strong>의미</strong><span>한계 초과</span></div>
+                </div>
             </div>
         </div>
     </div>
@@ -1169,6 +1540,12 @@ TPS <span class="hi">≈</span> VU 수 <span class="hi">÷</span> (응답시간 
 <span class="t-line">요청 99개 → 100ms</span>
 <span class="t-line">요청  1개 → 3,000ms</span>
 <span class="t-out">평균 = 약 130ms</span>
+<span class="avg-example">
+    <span class="avg-label">평균 연봉 예시</span>
+    <span class="avg-note">직원 9명 × 3천만 원<br>CEO 1명 × 30억 원</span>
+    <span class="avg-result">평균 연봉 ≈ 3억 원</span>
+    <span class="avg-note">대다수 직원의 상황은 가려진다.</span>
+</span>
 <span style="display:block; color:var(--ink-mute); font-size:0.85em; margin-top:0.6em;">겉보기엔 빠른 서비스이지만,<br>일부 사용자는 느린 응답을 경험한다.</span>
         </div>
 
@@ -1292,26 +1669,41 @@ TPS <span class="hi">≈</span> VU 수 <span class="hi">÷</span> (응답시간 
     <p class="eyebrow reveal">Section 06 · 핵심 개념</p>
     <h2 class="display reveal">시스템이 안정적으로 유지되는<br><span class="accent">전환 구간을 찾는 것.</span></h2>
 
-    <div class="flow-grid reveal">
-        <div class="flow-step">
-            <div class="step-n">01</div>
-            <h3>VU ↑ → TPS ↑</h3>
-            <p>사용자가 늘어나면 처리량도 비례해서 증가하는 안정 구간.</p>
+    <div class="flow-visual reveal">
+        <div class="capacity-chart">
+            <div class="chart-title">Capacity transition</div>
+            <div class="capacity-plot" aria-label="VU 증가에 따른 TPS 정체와 Latency 상승">
+                <div class="line tps"></div>
+                <div class="line latency"></div>
+                <div class="limit"><span>전환 구간</span></div>
+            </div>
+            <div class="capacity-legend">
+                <span>TPS</span>
+                <span class="lat">Latency / P99</span>
+            </div>
         </div>
-        <div class="flow-step">
-            <div class="step-n">02</div>
-            <h3>TPS 정체</h3>
-            <p>어느 순간 처리량 증가가 멈춘다 — Capacity 도달.</p>
-        </div>
-        <div class="flow-step">
-            <div class="step-n">03</div>
-            <h3>Latency ↑ (P99)</h3>
-            <p>큐가 쌓이면서 지연 시간이, 특히 P99가 먼저 튀어오른다.</p>
-        </div>
-        <div class="flow-step">
-            <div class="step-n">04</div>
-            <h3>Error 발생</h3>
-            <p>한계 초과. 에러 발생은 시스템이 더 이상 못 버틴다는 신호.</p>
+
+        <div class="flow-grid">
+            <div class="flow-step">
+                <div class="step-n">01</div>
+                <h3>VU ↑ → TPS ↑</h3>
+                <p>사용자가 늘어나면 처리량도 비례해서 증가하는 안정 구간.</p>
+            </div>
+            <div class="flow-step">
+                <div class="step-n">02</div>
+                <h3>TPS 정체</h3>
+                <p>어느 순간 처리량 증가가 멈춘다 — Capacity 도달.</p>
+            </div>
+            <div class="flow-step">
+                <div class="step-n">03</div>
+                <h3>Latency ↑ (P99)</h3>
+                <p>큐가 쌓이면서 지연 시간이 증가하고, P99가 평균보다 먼저 흔들린다.</p>
+            </div>
+            <div class="flow-step">
+                <div class="step-n">04</div>
+                <h3>Error 발생</h3>
+                <p>한계 초과. 에러 발생은 시스템이 더 이상 못 버틴다는 신호.</p>
+            </div>
         </div>
     </div>
 
@@ -1452,18 +1844,33 @@ TPS <span class="hi">≈</span> VU 수 <span class="hi">÷</span> (응답시간 
             <div class="tool-tagline">Performance as Code</div>
             <div class="tool-name">k6</div>
             <p class="tool-desc">JS 기반 코드. Go 런타임 기반으로 대규모 테스트에 효율적. Grafana + Prometheus 연동이 강력. 단점은 GUI 없음, JDBC/SMTP 약함.</p>
+            <div class="tool-fit">
+                <div class="fit-chip"><b>Best</b><span>Web API</span></div>
+                <div class="fit-chip"><b>Flow</b><span>CI/CD</span></div>
+                <div class="fit-chip"><b>Team</b><span>개발팀</span></div>
+            </div>
             <div class="tool-when">→ 일반적인 웹 API + CI/CD 자동화</div>
         </div>
         <div class="tool-card">
             <div class="tool-tagline">Legacy Standard</div>
             <div class="tool-name">JMeter</div>
             <p class="tool-desc">1998년부터 GUI로 누구나. <strong>JDBC·FTP·JMS·SMTP·LDAP</strong> 등 광범위한 프로토콜 지원. 단점은 무거움, XML로 Git 추적 곤란, 코드 리뷰 사실상 불가.</p>
+            <div class="tool-fit">
+                <div class="fit-chip"><b>Best</b><span>다중 프로토콜</span></div>
+                <div class="fit-chip"><b>Flow</b><span>GUI 작성</span></div>
+                <div class="fit-chip"><b>Team</b><span>QA 협업</span></div>
+            </div>
             <div class="tool-when">→ DB·메일·메시지큐 + GUI 작업</div>
         </div>
         <div class="tool-card">
             <div class="tool-tagline">Distributed Native</div>
             <div class="tool-name">nGrinder</div>
             <p class="tool-desc">네이버 사내 도구 → 2011 오픈소스. <strong>Controller + Agent</strong> 네이티브 분산 구조. 웹 UI에서 모니터링까지 한 곳. 단점은 진입 장벽 높음.</p>
+            <div class="tool-fit">
+                <div class="fit-chip"><b>Best</b><span>분산 부하</span></div>
+                <div class="fit-chip"><b>Flow</b><span>웹 콘솔</span></div>
+                <div class="fit-chip"><b>Team</b><span>사내 공용</span></div>
+            </div>
             <div class="tool-when">→ 수십만 VU 대규모 분산 + 사내 공용</div>
         </div>
     </div>
