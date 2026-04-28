@@ -12,6 +12,7 @@ class SlidePresentation {
         this.setupKeyboardNav();
         this.setupTouchNav();
         this.setupWheelNav();
+        this.setupTermTips();
         this.setupProgressBar();
     }
 
@@ -55,6 +56,8 @@ class SlidePresentation {
 
     setupKeyboardNav() {
         document.addEventListener('keydown', (e) => {
+            if (e.target.closest('button, a, input, textarea, select')) return;
+
             switch (e.key) {
                 case 'ArrowDown': case 'ArrowRight':
                 case 'PageDown': case ' ':
@@ -99,6 +102,27 @@ class SlidePresentation {
                 this.isAnimating = false;
             }, 250);
         }, { passive: true });
+    }
+
+    setupTermTips() {
+        const tips = Array.from(document.querySelectorAll('.term-tip'));
+        if (tips.length === 0) return;
+
+        const closeAll = () => tips.forEach(tip => tip.classList.remove('is-open'));
+
+        tips.forEach(tip => {
+            tip.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const wasOpen = tip.classList.contains('is-open');
+                closeAll();
+                if (!wasOpen) tip.classList.add('is-open');
+            });
+        });
+
+        document.addEventListener('click', closeAll);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeAll();
+        });
     }
 
     setupProgressBar() {
