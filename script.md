@@ -129,6 +129,50 @@ export const options = {
 };
 ```
 
+여기서 중요한 점은, VU라는 개념이 모든 도구에서 똑같은 실행 구조를 의미하지는 않는다는 것이다.
+
+이번 장표에서는 k6, JMeter, nGrinder의 실행 흐름을 비교해서 본다.
+
+### 도구별 실행 흐름
+
+**k6**
+
+```
+Scenario → VU → k6 Runtime → Target
+```
+
+k6에서는 사용자의 행동 흐름을 시나리오로 작성하고, VU가 그 시나리오를 반복 실행한다.
+
+다만 VU 1명이 OS Thread 1개로 그대로 매핑되는 구조는 아니다.
+
+여러 VU를 k6 Runtime이 효율적으로 실행하고, 그 결과로 대상 서버에 요청을 보낸다고 이해하면 된다.
+
+**JMeter**
+
+```
+Scenario → Thread Group → Thread → Target
+```
+
+JMeter에서는 Thread Group이 동시 사용자 그룹에 가깝고, Thread가 실제 요청을 실행하는 작업자 단위다.
+
+그래서 JMeter를 설명할 때는 "Thread 기반으로 동시 사용자를 표현한다"고 말할 수 있다.
+
+**nGrinder**
+
+```
+Scenario → Controller → Agent → Thread → Target
+```
+
+nGrinder는 Controller가 테스트를 지시하고, Agent가 실제 부하를 생성한다.
+
+Agent 안에서 Thread들이 요청을 실행하기 때문에, 대규모 부하를 여러 Agent로 분산시키기 좋다.
+
+정리하면, 같은 "가상 사용자"를 다루더라도 실행 모델은 다르다.
+
+- k6는 VU를 k6 Runtime이 실행한다.
+- JMeter는 Thread Group과 Thread 중심으로 이해한다.
+- nGrinder는 Controller-Agent 구조 위에서 Thread가 요청을 실행한다.
+
 ---
 
 ## 5. 부하 테스트 핵심 지표 (3가지)
@@ -301,8 +345,9 @@ Latency도 똑같다.
 | 동시 사용자 처리 | 대규모 VU 
 (스크립트와 장비 사양에 따라 달라짐) | 스레드 기반이라 상대적으로 제약 큼 | 대규모 VU
 (Agent 분산으로 확장) |
-| 동시성 모델 | Goroutine + Event Loop | Thread per VU
-(VU 1명 = OS 스레드 1개) | Thread per VU
+| 동시성 모델 | k6 Runtime
+(VU와 OS Thread가 1:1 매핑되지 않음) | Thread per VU
+(사용자마다 작업 Thread) | Thread per VU
 (Agent별로 분산 수용) |
 | 분산 부하 | k6 Operator (Kubernetes) | JMeter 서버 분산 | **Controller-Agent 네이티브 지원** |
 | 프로토콜 | HTTP, WebSocket, gRPC 중심 | 거의 모든 프로토콜 지원 | HTTP 중심 |
@@ -342,8 +387,10 @@ Latency도 똑같다.
     
     쉽게 보면
     
-    - VU = 사람 역할
-    - Thread = 일을 하는 몸
+    - VU = 사용자 역할
+    - Thread = 요청을 실행하는 작업자
+    - k6에서는 VU와 OS Thread가 1:1로 매핑되지 않음
+    - JMeter/nGrinder를 볼 때 Thread 개념이 중요함
     
     ---
     
