@@ -245,7 +245,7 @@ h2.display .accent { color: var(--accent); }
 .def-key {
     margin-top: clamp(0.8rem, 2vh, 1.6rem);
     font-size: clamp(0.95rem, 1.5vw, 1.2rem);
-    font-weight: 600; max-width: 55ch;
+    font-weight: 600; max-width: 68ch;
 }
 .def-key .arrow { color: var(--accent); font-weight: 800; margin-right: 0.4em; }
 
